@@ -1,0 +1,39 @@
+<div fxFlexFill fxLayout="column" fxLayoutAlign="start stretch">
+    <div fxLayout="row" fxLayoutAlign ="center center">
+        <mat-card fxLayout="column" fxFlex.gt-md="30" fxFlex.lt-lg="50" fxFlex.lt-sm="80" class="container primary-border"   fxLayoutAlign ="center center" >
+            <form [formGroup]="citySearchForm">
+                    <div fxLayoutAlign="center" class="sub-heading"> Search by City name</div>
+                    <div fxLayout="row wrap" fxLayoutAlign ="center center">
+                            <div fxLayout="column">
+                                <mat-form-field class="form-shadow" appearance="fill">
+                                    <mat-label>Enter City name </mat-label>                                
+                                    <input
+                                    appFocus
+                                    autocomplete="off"
+                                    matInput
+                                    maxlength="25"
+                                    type="text"      
+                                    formControlName="cityName"
+                                    #cityName
+                                    [(ngModel)]="cityNameVal"        
+                                    />
+                                    <mat-error *ngIf="getForm.cityName?.errors?.pattern">Please use characters only</mat-error>
+                                </mat-form-field>
+                            </div>
+                        <div fxLayout="row">
+                            <button
+                            id="go_btn"
+                            class="primary primary-background secondary-text button-margin"
+                            [disabled]="!cityNameVal || citySearchForm.invalid"
+                            (click)="search(cityName.value)" 
+                            mat-raised-button mat-primary>	<mat-icon inline=true> directions_run</mat-icon> Go </button>
+                        </div>
+                    </div>
+                </form>
+        </mat-card>
+    </div>
+    <div *ngIf="weatherDetails" fxFlex fxLayoutAlign ="center center">
+        <h4>The weather at {{ weatherDetails.name }}, {{ weatherDetails.sys.country }} is,</h4>
+        <h3>{{ weatherDetails.main.temp }}</h3>
+    </div>
+</div>
