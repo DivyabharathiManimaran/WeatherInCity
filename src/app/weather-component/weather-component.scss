@@ -1,0 +1,31 @@
+.heading {
+    font-size: 40px;
+    font-family: verdana;
+    font-weight: 600;
+    padding: 12px;
+    line-height: 40px;
+    background-color: #5766be;
+    color: white;
+}
+
+.left-column {
+    background-color: aliceblue;
+}
+
+.sub-heading {
+    font-size: 18px;
+    font-family: verdana;
+    font-weight: 600;
+    padding: 0 0 16px 0;
+}
+
+.button-style {
+    margin: 0 0 16px 12px;
+    border-radius: 20px;
+    &:enabled {
+        border: 2px solid #5766be;
+        mat-icon {
+            color: #5766be;
+        }
+    }
+}

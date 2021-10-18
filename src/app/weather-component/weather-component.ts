@@ -17,6 +17,11 @@ export class WeatherComponent implements OnInit {
     long?: number;
     weatherDetails?:WeatherResponse;
     cityNameVal:string ='';
+    waitingLocPerm:boolean = false;
+    accessDenied:boolean = false;
+    currentLoc:boolean = false;
+    cityName?:string;
+    errorMsg?:string;
 
     constructor(
         @Inject(SESSION_STORAGE) private storage: StorageService,
@@ -25,9 +30,12 @@ export class WeatherComponent implements OnInit {
 
     ngOnInit() {
         this.citySearchForm = this.fb.group({
-            cityName: new FormControl('',Validators.pattern("[a-zA-Z]*")),
+            cityName: new FormControl('',Validators.pattern("[a-zA-Z][a-zA-Z -]*")),
         });
-        if(this.storage.get(CITY)) this.search(this.storage.get(CITY));
+        if(this.storage.get(CITY)) {
+            this.search(this.storage.get(CITY));
+            this.waitingLocPerm= false;
+        }
         else this.getCurrentLocation();
     }
     get getForm(){
@@ -35,29 +43,54 @@ export class WeatherComponent implements OnInit {
     }
 
     search(city:string) {
-        this.weatherService.getWeatherByCity(city).subscribe((resp:WeatherResponse) => {
-            this.storage.set(CITY, city);
-            this.weatherDetails = resp;
-            console.log(this.weatherDetails);
-        });
+        if(city!=this.cityName) {
+            this.cityName = city;
+            this.weatherService.getWeatherByCity(city).subscribe((resp:WeatherResponse) => {
+                if(this.storage.get(CITY) !== city)this.storage.set(CITY, city);
+                this.weatherDetails = resp;
+                this.currentLoc=false;
+                this.waitingLocPerm = false;
+                this.accessDenied=false;
+                this.errorMsg='';
+            }, error => {
+                if(error.statusText == "Not Found") {
+                   this.errorMsg = "City not found! Please verify the city name.";
+                } else this.errorMsg = (error.error.message);
+                
+            });
+        }
     }
     getCurrentLocation() {
+        this.waitingLocPerm=true;
         if("geolocation" in navigator) {
             navigator.geolocation.watchPosition( resp => {
-                this.lat = resp.coords.latitude;
-                this.long = resp.coords.longitude;
-                this.getUsingCoord();
+                this.waitingLocPerm= false;
+                this.currentLoc=true;
+                this.errorMsg='';
+                this.getUsingCoord(resp.coords.latitude,resp.coords.latitude);
+            }, error => {
+                if(error.code == error.PERMISSION_DENIED) {
+                    this.waitingLocPerm = false;
+                    this.accessDenied=true;
+                }else this.errorMsg = error.message;
             })
         }
 
     }
 
-    getUsingCoord() {
-        if(this.lat && this.long) {
-            this.weatherService.getWeatherByCoord(this.lat,this.long).subscribe((resp:WeatherResponse) => {
-                this.weatherDetails = resp;
-                console.log(this.weatherDetails);
-            });
-        }
+    getUsingCoord(latitude:number, longitude:number) {
+            if(latitude!== this.lat || longitude !== this.long) {
+                this.weatherService.getWeatherByCoord(latitude, longitude).subscribe((resp:WeatherResponse) => {
+                    this.weatherDetails = resp;
+                    let city = resp.name;
+                    if(this.storage.get(CITY) !== city)this.storage.set(CITY, city);
+                    this.lat = latitude;
+                    this.long = longitude;
+                    this.errorMsg='';
+                }, error => {
+                    this.errorMsg = error.error.message;
+                    
+                });
+            }
     }
 }
