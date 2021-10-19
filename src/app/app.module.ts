@@ -9,6 +9,9 @@ import { MatButtonModule } from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatDividerModule} from '@angular/material/divider';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { AgmCoreModule } from '@agm/core';
+
 
 
 import { AppRoutingModule } from './app-routing.module';
@@ -35,7 +38,11 @@ import { FocusDirective } from './weather-component/directives/auto-focus.direct
     MatButtonModule,
     MatIconModule,
     MatDividerModule,
-    AppRoutingModule
+    AppRoutingModule,
+    FontAwesomeModule,
+    AgmCoreModule.forRoot({
+      apiKey:'AIzaSyChmU90nvmA0JJkDtOrCDn5-IFZO5fX6gw'
+    })
   ],
   providers: [],
   bootstrap: [AppComponent]

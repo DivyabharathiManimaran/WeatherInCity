@@ -41,4 +41,15 @@ export interface WeatherResponse {
     "id": number,
     "name": string,
     "cod": number
-}   
+}
+
+export interface  DisplayWeather {
+  "city":string,
+  "isDay":boolean,
+  "sunSetTime":string,
+  "currentTemp":number,
+  "minTemp":number,
+  "maxTemp":number,
+  "feelsLike":number,
+  "humidity":number,
+}

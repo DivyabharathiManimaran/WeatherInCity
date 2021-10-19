@@ -1,7 +1,7 @@
 <div fxFlexFill fxLayout="column" fxLayoutAlign="start stretch">
     <div class="heading" fxLayoutAlign ="center center">City Weather</div>
     <div fxFlex fxLayout="row" fxLayout.lt-md="column" fxLayoutAlign="start stretch">
-        <div class="left-column" fxLayout="row" fxFlex.gt-sm="35" fxLayoutAlign ="center center">
+        <div fxLayout="row" fxFlex.gt-sm="35" fxLayoutAlign ="center center">
             <form [formGroup]="citySearchForm" style="padding: 30px;">
                     <div fxLayoutAlign="center" class="sub-heading"> Search by City name</div>
                     <div fxLayout="row wrap" fxLayoutAlign ="center center">
@@ -31,26 +31,41 @@
                     </div>
             </form>
         </div>
-        <div *ngIf="weatherDetails && !errorMsg" fxLayout="column" fxFlex fxLayoutAlign ="center center">
-            <h2 *ngIf="currentLoc;else city">The Weather in your location ({{ weatherDetails.name }})</h2>
-            <ng-template #city>
-                <h2>The weather at {{ weatherDetails.name | titlecase}}, {{ weatherDetails.sys.country | titlecase}}</h2>
-            </ng-template>
-            <h3>{{ weatherDetails.main.temp }}</h3>
-        </div>
-        <div *ngIf="waitingLocPerm && !accessDenied && !errorMsg" fxFlex fxLayoutAlign ="center center">
-            <h2>
-                Please allow City Weather Site to access your location information
-            </h2>
-        </div>        
-        <div *ngIf="accessDenied && !waitingLocPerm && !errorMsg" fxFlex fxLayoutAlign ="center center">
-            <h2>
-                Search using city name to know the weather there.
-            </h2>
-        </div>
-        <div *ngIf="errorMsg" fxLayout="column" fxFlex fxLayoutAlign="center center" fxLayoutGap="24px">
-            <img width="80" src="assets/error.gif" alt="loaderGif">
-            <h3>{{ errorMsg }}</h3>
+        <div fxFlex class="right-colum">
+            <div *ngIf="weatherDetails && !errorMsg" fxLayout="column" fxFlex fxLayoutAlign ="center center">
+                <h2 *ngIf="currentLoc;else city">The Weather in your location ({{ weatherDetails.name }})</h2>
+                <ng-template #city>
+                    <h2>The weather in {{ (displayWeather.city | titlecase) || 'selected location'}}</h2>
+                </ng-template>
+                <div fxLayout="column" fxLayoutAlign="center center">
+                    <div *ngIf="displayWeather.isDay"><i class="fas fa-4x fa-sun sun"></i></div>
+                    <div *ngIf="!displayWeather.isDay"><i class="fas fa-4x fa-moon moon"></i></div>
+                    <div style="margin-top: -30px;"><i class="fas fa-4x fa-cloud cloud"></i></div>
+                    <h3 class="main-content">{{ displayWeather.currentTemp}}°C</h3>
+                    <div class="sub-content">{{ displayWeather.minTemp}}°C / {{ displayWeather.maxTemp }}°C</div>
+                    <div><span class="label">Feels like: </span><span class="sub-content">{{ displayWeather.feelsLike }}°C</span></div>
+                    <div><span class="label">Humidity: </span><span class="sub-content">{{ displayWeather.humidity }}%</span></div>
+                </div>
+                <div fxLayout="column" fxLayoutAlign ="center center" *ngIf="lat && long">
+                    <agm-map fxFlex class="map-size" [latitude]="lat" [longitude]="long" (mapClick)="getCoords($event)">
+                        <agm-marker [latitude]="lat" [longitude]="long"></agm-marker>
+                    </agm-map>
+                </div>
+            </div>
+            <div *ngIf="waitingLocPerm && !accessDenied && !errorMsg" fxFlex fxLayoutAlign ="center center">
+                <h2>
+                    Please allow City Weather Site to access your location information
+                </h2>
+            </div>        
+            <div *ngIf="accessDenied && !waitingLocPerm && !errorMsg" fxFlex fxLayoutAlign ="center center">
+                <h2>
+                    Search using city name to know the weather there.
+                </h2>
+            </div>
+            <div *ngIf="errorMsg" fxLayout="column" fxFlex fxLayoutAlign="center center" fxLayoutGap="24px">
+                <img width="80" src="assets/error.gif" alt="loaderGif">
+                <h3>{{ errorMsg }}</h3>
+            </div>
         </div>
     </div>
 </div>

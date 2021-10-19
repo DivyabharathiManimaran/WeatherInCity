@@ -1,8 +1,9 @@
 import { Component, Inject, OnInit } from "@angular/core";
 import { FormGroup, FormBuilder, FormControl, Validators } from "@angular/forms";
 import { SESSION_STORAGE, StorageService } from 'ngx-webstorage-service';
-import { WeatherResponse } from "./model/weather-reesponse.model";
+import { DisplayWeather, WeatherResponse } from "./model/weather-reesponse.model";
 import { WeatherUtilityService } from "./service/weather-utility.service";
+import * as moment from "moment";
 
 const CITY = 'cityName';
 
@@ -22,6 +23,17 @@ export class WeatherComponent implements OnInit {
     currentLoc:boolean = false;
     cityName?:string;
     errorMsg?:string;
+    sunSetTime?:string;
+    displayWeather:DisplayWeather = {
+        city:'',
+        isDay: false,
+        sunSetTime:'',
+        currentTemp:0,
+        minTemp:0,
+        maxTemp:0,
+        feelsLike:0,
+        humidity:0
+    };
 
     constructor(
         @Inject(SESSION_STORAGE) private storage: StorageService,
@@ -52,12 +64,34 @@ export class WeatherComponent implements OnInit {
                 this.waitingLocPerm = false;
                 this.accessDenied=false;
                 this.errorMsg='';
+                this.setDetails();
             }, error => {
                 if(error.statusText == "Not Found") {
                    this.errorMsg = "City not found! Please verify the city name.";
-                } else this.errorMsg = (error.error.message);
+                } else if(error.error.message) this.errorMsg = (error.error.message);
+                else this.errorMsg = "Unable to fetch results!"
                 
             });
+        }
+
+        // this.weatherDetails = this.weatherService.getWeatherByCity(city);
+        // console.log(this.weatherDetails);
+        // this.setDetails();
+    }
+    setDetails() {
+        if(this.weatherDetails) {
+            this.displayWeather.city = this.weatherDetails.name;
+            let sunSetTime = moment(moment(this.weatherDetails.sys.sunset *1000), 'hh:mma');
+            this.displayWeather.sunSetTime= sunSetTime.toLocaleString();
+            let currentTime = moment(moment(),'hh:mma');
+            this.displayWeather.isDay = sunSetTime.isAfter(currentTime);
+            this.displayWeather.currentTemp = this.weatherDetails.main.temp;
+            this.displayWeather.minTemp = this.weatherDetails.main.temp_min;
+            this.displayWeather.maxTemp = this.weatherDetails.main.temp_max;
+            this.displayWeather.feelsLike = this.weatherDetails.main.feels_like;
+            this.displayWeather.humidity =  this.weatherDetails.main.humidity;
+            this.lat=this.weatherDetails.coord.lat;
+            this.long=this.weatherDetails.coord.lon;
         }
     }
     getCurrentLocation() {
@@ -72,7 +106,8 @@ export class WeatherComponent implements OnInit {
                 if(error.code == error.PERMISSION_DENIED) {
                     this.waitingLocPerm = false;
                     this.accessDenied=true;
-                }else this.errorMsg = error.message;
+                }else if(error.message) this.errorMsg = error.message;
+                else this.errorMsg = "Unable to fetch results!"
             })
         }
 
@@ -87,10 +122,19 @@ export class WeatherComponent implements OnInit {
                     this.lat = latitude;
                     this.long = longitude;
                     this.errorMsg='';
+                    this.setDetails();
                 }, error => {
-                    this.errorMsg = error.error.message;
+                    if(error.error.message) this.errorMsg = (error.error.message);
+                    else this.errorMsg = "Unable to fetch results!"
                     
                 });
             }
+    }
+    getCoords(event: { coords: { lat: number; lng: number; }; }){
+        let lat = event.coords.lat;
+        let long = event.coords.lng;
+        if(lat && long) this.getUsingCoord(lat,long);
+
+
     }
 }

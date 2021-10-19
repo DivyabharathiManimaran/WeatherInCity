@@ -1,6 +1,8 @@
+:host{
+    font-family: verdana;
+}
 .heading {
     font-size: 40px;
-    font-family: verdana;
     font-weight: 600;
     padding: 12px;
     line-height: 40px;
@@ -9,8 +11,8 @@
     text-align: center;
 }
 
-.left-column {
-    background-color: aliceblue;
+.right-colum {
+    background-color: lightsteelblue;
 }
 
 .sub-heading {
@@ -28,5 +30,55 @@
         mat-icon {
             color: #5766be;
         }
+    }
+}
+
+.label {
+    font-size: 14px;
+    font-family: verdana;
+    font-weight: 400;
+}
+.main-content {
+    font-size: 18px;
+    font-family: verdana;
+    font-weight: 600;
+    margin: 0;
+}
+.sub-content {
+    font-size: 15px;
+    font-family: verdana;
+    font-weight: 600;
+}
+.sun {
+    color: yellow;
+    filter: drop-shadow(1px 1px 10px yellow );
+}
+.moon {
+    color: white;
+    filter: drop-shadow(1px 1px 10px white );
+}
+.cloud {
+    color: cornflowerblue;
+    filter: drop-shadow(1px 1px 10px cornflowerblue);
+    animation: cloudMovement 5s ease-in-out 0s infinite alternate;
+}
+
+@keyframes cloudMovement {
+    from{margin-left: -50px;}
+    to{margin-left: 50px;}
+    
+}
+
+.map-size {
+    height: 260px;
+    width: 260px;
+    padding-top: 16px;
+    @media screen and (min-width:600px){
+        width: 400px;
+    }
+    
+    @media screen and (min-width:1366px){
+        width: 600px;
+        height: 350px;
     }
 }
