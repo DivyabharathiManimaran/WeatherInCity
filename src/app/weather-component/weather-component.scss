@@ -13,6 +13,11 @@
 
 .right-colum {
     background-color: lightsteelblue;
+    padding: 20px;
+}
+
+.scroll-container {
+    overflow-y: auto;
 }
 
 .sub-heading {
@@ -70,11 +75,11 @@
 }
 
 .map-size {
-    height: 260px;
-    width: 260px;
+    height: 250px;
+    width: 350px;
     padding-top: 16px;
     @media screen and (min-width:600px){
-        width: 400px;
+        width:500px;
     }
     
     @media screen and (min-width:1366px){

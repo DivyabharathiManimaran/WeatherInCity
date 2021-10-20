@@ -1,6 +1,6 @@
-<div fxFlexFill fxLayout="column" fxLayoutAlign="start stretch">
+<div fxFlexFill fxLayout="column" fxLayoutAlign="start stretch" class="scroll-container">
     <div class="heading" fxLayoutAlign ="center center">City Weather</div>
-    <div fxFlex fxLayout="row" fxLayout.lt-md="column" fxLayoutAlign="start stretch">
+    <div fxFlex fxLayout="row" fxLayout.lt-md="column" fxLayoutAlign="start stretch" class="scroll-container">
         <div fxLayout="row" fxFlex.gt-sm="35" fxLayoutAlign ="center center">
             <form [formGroup]="citySearchForm" style="padding: 30px;">
                     <div fxLayoutAlign="center" class="sub-heading"> Search by City name</div>
@@ -46,8 +46,9 @@
                     <div><span class="label">Feels like: </span><span class="sub-content">{{ displayWeather.feelsLike }}°C</span></div>
                     <div><span class="label">Humidity: </span><span class="sub-content">{{ displayWeather.humidity }}%</span></div>
                 </div>
-                <div fxLayout="column" fxLayoutAlign ="center center" *ngIf="lat && long">
-                    <agm-map fxFlex class="map-size" [latitude]="lat" [longitude]="long" (mapClick)="getCoords($event)">
+                <div [fxHide.lt-sm]="true" fxLayout="column" fxLayoutAlign ="start stretch" *ngIf="lat && long">
+                    <agm-map fxLayoutAlign ="start stretch" 
+                     class="map-size" [latitude]="lat" [longitude]="long" (mapClick)="getCoords($event)">
                         <agm-marker [latitude]="lat" [longitude]="long"></agm-marker>
                     </agm-map>
                 </div>
@@ -62,7 +63,7 @@
                     Search using city name to know the weather there.
                 </h2>
             </div>
-            <div *ngIf="errorMsg" fxLayout="column" fxFlex fxLayoutAlign="center center" fxLayoutGap="24px">
+            <div [fxHide]="!errorMsg" fxLayout="column" fxFlex fxLayoutAlign="center center" fxLayoutGap="24px">
                 <img width="80" src="assets/error.gif" alt="loaderGif">
                 <h3>{{ errorMsg }}</h3>
             </div>
