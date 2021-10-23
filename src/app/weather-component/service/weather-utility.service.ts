@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Inject, Injectable } from "@angular/core";
-import { Observable } from "rxjs";
-import { WeatherResponse } from "../model/weather-reesponse.model";
+import * as moment from "moment";
+import { BehaviorSubject, Observable } from "rxjs";
+import { DisplayWeather, WeatherResponse } from "../model/weather-reesponse.model";
 
 @Injectable({
     providedIn:"root"
@@ -10,6 +11,17 @@ import { WeatherResponse } from "../model/weather-reesponse.model";
 export class WeatherUtilityService {
     baseUrl:string = 'https://api.openweathermap.org/data/2.5/weather';
     apiKeyId:string = '8f91e62c5a282e9848f51b6a78646f11';
+    private readonly weatherDetails = new BehaviorSubject<DisplayWeather>({
+        city:'',
+        isDay: false,
+        sunSetTime:'',
+        currentTemp:0,
+        minTemp:0,
+        maxTemp:0,
+        feelsLike:0,
+        humidity:0
+    });
+    readonly weatherDetail$ = this.weatherDetails.asObservable();
 
     constructor(private readonly http: HttpClient) { }
 
@@ -22,6 +34,24 @@ export class WeatherUtilityService {
         let params = new HttpParams().set('q', city).set('units', 'metric').set('appid', this.apiKeyId);
 
         return this.http.get<WeatherResponse>(this.baseUrl, {params});
+    }
+
+    setDetails(details: WeatherResponse) {
+        let dispWeather:DisplayWeather;
+        let sunSetTime = moment(moment(details.sys.sunset *1000), 'hh:mma');
+        let currentTime = moment(moment(),'hh:mma');
+        dispWeather = {
+            city : details.name,
+            sunSetTime: sunSetTime.toLocaleString(),
+            isDay : sunSetTime.isAfter(currentTime),
+            currentTemp : details.main.temp,
+            minTemp : details.main.temp_min,
+            maxTemp : details.main.temp_max,
+            feelsLike : details.main.feels_like,
+            humidity :  details.main.humidity,
+        }
+        this.weatherDetails.next(dispWeather);
+        
     }
 
     // getWeatherByCity(city:string): WeatherResponse {

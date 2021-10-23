@@ -9,6 +9,7 @@
                             <mat-form-field class="form-shadow" appearance="outline">
                                 <mat-label>Enter City name </mat-label>                                
                                 <input
+                                id="citySearch"
                                 appFocus
                                 autocomplete="off"
                                 matInput
@@ -25,7 +26,7 @@
                             <button
                             class="primary button-style"
                             [disabled]="!cityNameVal || citySearchForm.invalid"
-                            (click)="search(cityName.value)"
+                            (click)="searchClick(cityName.value)"
                             mat-raised-button mat-primary>	<mat-icon inline=true> wb_sunny</mat-icon> See </button>
                         </div>
                     </div>
@@ -35,16 +36,16 @@
             <div *ngIf="weatherDetails && !errorMsg" fxLayout="column" fxFlex fxLayoutAlign ="center center">
                 <h2 *ngIf="currentLoc;else city">The Weather in your location ({{ weatherDetails.name }})</h2>
                 <ng-template #city>
-                    <h2>The weather in {{ (displayWeather.city | titlecase) || 'selected location'}}</h2>
+                    <h2>The weather in {{ (displayWeather?.city | titlecase) || 'selected location'}}</h2>
                 </ng-template>
                 <div fxLayout="column" fxLayoutAlign="center center">
-                    <div *ngIf="displayWeather.isDay"><i class="fas fa-4x fa-sun sun"></i></div>
-                    <div *ngIf="!displayWeather.isDay"><i class="fas fa-4x fa-moon moon"></i></div>
+                    <div *ngIf="displayWeather?.isDay"><i class="fas fa-4x fa-sun sun"></i></div>
+                    <div *ngIf="!displayWeather?.isDay"><i class="fas fa-4x fa-moon moon"></i></div>
                     <div style="margin-top: -30px;"><i class="fas fa-4x fa-cloud cloud"></i></div>
-                    <h3 class="main-content">{{ displayWeather.currentTemp}}°C</h3>
-                    <div class="sub-content">{{ displayWeather.minTemp}}°C / {{ displayWeather.maxTemp }}°C</div>
-                    <div><span class="label">Feels like: </span><span class="sub-content">{{ displayWeather.feelsLike }}°C</span></div>
-                    <div><span class="label">Humidity: </span><span class="sub-content">{{ displayWeather.humidity }}%</span></div>
+                    <h3 class="main-content">{{ displayWeather?.currentTemp}}°C</h3>
+                    <div class="sub-content">{{ displayWeather?.minTemp}}°C / {{ displayWeather?.maxTemp }}°C</div>
+                    <div><span class="label">Feels like: </span><span class="sub-content">{{ displayWeather?.feelsLike }}°C</span></div>
+                    <div><span class="label">Humidity: </span><span class="sub-content">{{ displayWeather?.humidity }}%</span></div>
                 </div>
                 <div [fxHide.lt-sm]="true" fxLayout="column" fxLayoutAlign ="start stretch" *ngIf="lat && long">
                     <agm-map fxLayoutAlign ="start stretch" 
