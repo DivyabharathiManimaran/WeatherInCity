@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { FormGroup, FormBuilder, FormControl, Validators } from "@angular/forms";
 import { SESSION_STORAGE, StorageService } from 'ngx-webstorage-service';
-import { CityData, DisplayWeather, WeatherResponse } from "./model/weather-reesponse.model";
+import { CityData, CityFromJson, DisplayWeather, WeatherResponse } from "./model/weather-reesponse.model";
 import { WeatherUtilityService } from "./service/weather-utility.service";
 import { interval, Observable, Subscription } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -27,6 +27,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
     errorMsg?:string;
     displayWeather?:DisplayWeather;
     geoLocationWatch?: any;
+    coordTimerSubs?: Subscription;
     cityTimerSubs?: Subscription;
     citySubs?: Subscription;
     weatherDetSubs?:Subscription;
@@ -45,15 +46,21 @@ export class WeatherComponent implements OnInit, OnDestroy {
         @Inject(SESSION_STORAGE) private storage: StorageService,
         private readonly weatherService: WeatherUtilityService) {
             this.weatherService.getCities().subscribe( (resp: CityData) => {
+                this.options=[];
                 for(let item of resp.data) {
                     this.options.push(...item.cities);
                 }
                 this.options.sort();
-                console.log(this.options);
+            }, () =>{
+                this.getFromJson()
             });
         }
 
     ngOnInit() {
+        this.filteredOptions = this.cityControl.valueChanges.pipe(
+            startWith(''),
+            map(val => val.length >= 3 ? this.filter(val): [])        
+        );
         if(this.storage.get(CITY)) {
             this.waitingLocPerm= false;
             this.search(this.storage.get(CITY));
@@ -67,15 +74,18 @@ export class WeatherComponent implements OnInit, OnDestroy {
                 this.displayWeather = resp;
             }
         });
-        this.filteredOptions = this.cityControl.valueChanges.pipe(
-            startWith(''),
-            map(val => val.length >= 2 ? this.filter(val): [])        
-        );
+    }
+    getFromJson() {
+        this.weatherService.getCitiesFromJson().subscribe( (res:CityFromJson) => {
+            this.options=[];
+            this.options.push(...res.cities);
+        })
+
     }
 
     filter(val:string):string[] {
         const filterVal = val.toLocaleLowerCase();
-        return [...new Set(this.options.filter(option => option.toLocaleLowerCase().includes(filterVal)))];
+        return [...new Set(this.options.filter(option => option.toLocaleLowerCase().startsWith(filterVal)))];
     }
 
     getCurrentLocation() {

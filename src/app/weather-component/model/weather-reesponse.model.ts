@@ -62,3 +62,7 @@ export interface City {
   "country":string,
   "cities": Array<string>
 }
+
+export interface CityFromJson {
+  "cities":Array<string>
+}
