@@ -16,6 +16,7 @@ const CITY = 'cityName';
 })
 export class WeatherComponent implements OnInit, OnDestroy {
 
+    cityControl = new FormControl('',Validators.pattern("[a-zA-Z][a-zA-Z -]*"));
     lat?:number;
     long?: number;
     weatherDetails?:WeatherResponse;
@@ -32,35 +33,22 @@ export class WeatherComponent implements OnInit, OnDestroy {
     citySubs?: Subscription;
     weatherDetSubs?:Subscription;
     coordSubs?: Subscription;
-
-
     options: string[] = [];
-    cityControl = new FormControl('',Validators.pattern("[a-zA-Z][a-zA-Z -]*"));
     filteredOptions?: Observable<string[]>;
-
-    dispFunc(subj:any) {
-        return subj ? subj.name : undefined;
-    }
 
     constructor(
         @Inject(SESSION_STORAGE) private storage: StorageService,
         private readonly weatherService: WeatherUtilityService) {
-            this.weatherService.getCities().subscribe( (resp: CityData) => {
-                this.options=[];
-                for(let item of resp.data) {
-                    this.options.push(...item.cities);
-                }
-                this.options.sort();
-            }, () =>{
-                this.getFromJson()
-            });
+            this.getCitiesFromAPI();
         }
 
     ngOnInit() {
+        /** Filtering cities based on input text */
         this.filteredOptions = this.cityControl.valueChanges.pipe(
             startWith(''),
             map(val => val.length >= 3 ? this.filter(val): [])        
         );
+        /** Check conditions on refresh */
         if(this.storage.get(CITY)) {
             this.waitingLocPerm= false;
             this.search(this.storage.get(CITY));
@@ -68,26 +56,43 @@ export class WeatherComponent implements OnInit, OnDestroy {
         else {
             this.getCurrentLocation();
         }
-        this.weatherService.weatherDetail$.subscribe((resp:DisplayWeather) => {
+        /** Monitor state change */
+        this.weatherDetSubs = this.weatherService.weatherDetail$.subscribe((resp:DisplayWeather) => {
             if(resp) {
                 this.errorMsg = '';
                 this.displayWeather = resp;
             }
         });
     }
+
+    /**Get Cities from API */
+    getCitiesFromAPI() {
+        this.weatherService.getCities().subscribe( (resp: CityData) => {
+            this.options=[];
+            for(let item of resp.data) {
+                this.options.push(...item.cities);
+            }
+            this.options.sort();
+        }, () =>{
+            this.getFromJson()
+        });
+    }       
+
+    /**Get Cities from JSON */
     getFromJson() {
         this.weatherService.getCitiesFromJson().subscribe( (res:CityFromJson) => {
             this.options=[];
             this.options.push(...res.cities);
-        })
-
+        });
     }
 
+    /** Filtering cities based on input text */
     filter(val:string):string[] {
         const filterVal = val.toLocaleLowerCase();
         return [...new Set(this.options.filter(option => option.toLocaleLowerCase().startsWith(filterVal)))];
     }
 
+    /** Get Weather using current location info */
     getCurrentLocation() {
         this.waitingLocPerm=true;
         if("geolocation" in navigator) {
@@ -107,6 +112,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
         }
     }
 
+    /** Get Weather using location coordinates */
     getUsingCoord(lat:number, long:number) {        
         this.weatherService.getWeatherByCoord(lat, long).subscribe((resp:WeatherResponse) => {
             this.weatherDetails = resp;
@@ -126,6 +132,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
         }
     }
 
+    /** Update weather every 10 seconds */
     search(city:string) {
         this.errorMsg='Loading...';
             this.fetchByCity(city);
@@ -134,6 +141,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
             }));
     }
 
+    /** Get Weather using city name */
     fetchByCity(city:string) {
         this.citySubs = this.weatherService.getWeatherByCity(city).subscribe((resp:WeatherResponse) => {
             if(this.storage.get(CITY) !== city)this.storage.set(CITY, city);
@@ -155,6 +163,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
         });
     }
 
+    /** Get coordinates from map */
     getCoords(event: { coords: { lat: number; lng: number; }; }){           
         this.clearPrevSubs();   
         this.cityName = '';
@@ -163,13 +172,14 @@ export class WeatherComponent implements OnInit, OnDestroy {
         else this.errorMsg = 'Unable to fetch the coordinates. Please try searching using city name!';
     }
 
-    clearPrevSubs() {
-        this.cityTimerSubs?.unsubscribe();
-        if(this.geoLocationWatch)navigator.geolocation.clearWatch(this.geoLocationWatch); 
-    }
     setCoord(lat:number,long:number) {
         this.lat = lat;
         this.long = long;
+    }
+
+    clearPrevSubs() {
+        this.cityTimerSubs?.unsubscribe();
+        if(this.geoLocationWatch)navigator.geolocation.clearWatch(this.geoLocationWatch); 
     }
 
     ngOnDestroy() {
