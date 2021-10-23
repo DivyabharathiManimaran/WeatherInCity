@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from "@angular/common/http";
 import { Inject, Injectable } from "@angular/core";
 import * as moment from "moment";
 import { BehaviorSubject, Observable } from "rxjs";
-import { DisplayWeather, WeatherResponse } from "../model/weather-reesponse.model";
+import { CityData, DisplayWeather, WeatherResponse } from "../model/weather-reesponse.model";
 
 @Injectable({
     providedIn:"root"
@@ -24,6 +24,10 @@ export class WeatherUtilityService {
     readonly weatherDetail$ = this.weatherDetails.asObservable();
 
     constructor(private readonly http: HttpClient) { }
+
+    getCities(): Observable<CityData>{
+        return this.http.get<CityData>('https://countriesnow.space/api/v0.1/countries');
+    }
 
     getWeatherByCoord(lat:number, long:number): Observable<WeatherResponse> {
         let params = new HttpParams().set('lat', lat).set('lon', long).set('units', 'metric').set('appid', this.apiKeyId);

@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { FormGroup, FormBuilder, FormControl, Validators } from "@angular/forms";
 import { SESSION_STORAGE, StorageService } from 'ngx-webstorage-service';
-import { DisplayWeather, WeatherResponse } from "./model/weather-reesponse.model";
+import { CityData, DisplayWeather, WeatherResponse } from "./model/weather-reesponse.model";
 import { WeatherUtilityService } from "./service/weather-utility.service";
-import { interval, Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { interval, Observable, Subscription } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 import * as moment from "moment";
 
 const CITY = 'cityName';
@@ -15,7 +15,7 @@ const CITY = 'cityName';
     styleUrls:['./weather-component.scss']
 })
 export class WeatherComponent implements OnInit, OnDestroy {
-    citySearchForm !: FormGroup;
+
     lat?:number;
     long?: number;
     weatherDetails?:WeatherResponse;
@@ -32,12 +32,24 @@ export class WeatherComponent implements OnInit, OnDestroy {
     weatherDetSubs?:Subscription;
     coordSubs?: Subscription;
 
+
+    options: string[] = [];
+    cityControl = new FormControl('',Validators.pattern("[a-zA-Z][a-zA-Z -]*"));
+    filteredOptions?: Observable<string[]>;
+
+    dispFunc(subj:any) {
+        return subj ? subj.name : undefined;
+    }
+
     constructor(
         @Inject(SESSION_STORAGE) private storage: StorageService,
-        private readonly weatherService: WeatherUtilityService,
-        private readonly fb: FormBuilder) {
-            this.citySearchForm = this.fb.group({
-                cityName: new FormControl('',Validators.pattern("[a-zA-Z][a-zA-Z -]*")),
+        private readonly weatherService: WeatherUtilityService) {
+            this.weatherService.getCities().subscribe( (resp: CityData) => {
+                for(let item of resp.data) {
+                    this.options.push(...item.cities);
+                }
+                this.options.sort();
+                console.log(this.options);
             });
         }
 
@@ -55,6 +67,15 @@ export class WeatherComponent implements OnInit, OnDestroy {
                 this.displayWeather = resp;
             }
         });
+        this.filteredOptions = this.cityControl.valueChanges.pipe(
+            startWith(''),
+            map(val => val.length >= 2 ? this.filter(val): [])        
+        );
+    }
+
+    filter(val:string):string[] {
+        const filterVal = val.toLocaleLowerCase();
+        return [...new Set(this.options.filter(option => option.toLocaleLowerCase().includes(filterVal)))];
     }
 
     getCurrentLocation() {
@@ -96,6 +117,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
     }
 
     search(city:string) {
+        this.errorMsg='Loading...';
             this.fetchByCity(city);
             this.cityTimerSubs = interval(10000).subscribe((x =>{
                 this.fetchByCity(city);
@@ -114,8 +136,9 @@ export class WeatherComponent implements OnInit, OnDestroy {
             this.setCoord(resp.coord.lat,resp.coord.lon);
             this.weatherService.setDetails(this.weatherDetails);
         }, error => {
+            this.clearPrevSubs();  
             if(error.statusText == "Not Found") {
-                this.errorMsg = "City not found! Please verify the city name.";
+                this.errorMsg = "City not found! Please verify the city name or search for another city.";
             } else if(error.error.message) this.errorMsg = (error.error.message);
             else this.errorMsg = "Unable to fetch results!"
             
@@ -138,11 +161,6 @@ export class WeatherComponent implements OnInit, OnDestroy {
         this.lat = lat;
         this.long = long;
     }
-
-    get getForm(){
-        return this.citySearchForm.controls;
-    }
-
 
     ngOnDestroy() {
         this.clearPrevSubs();

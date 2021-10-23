@@ -53,3 +53,12 @@ export interface  DisplayWeather {
   "feelsLike":number,
   "humidity":number,
 }
+
+export interface CityData {
+  "data" : Array<City>
+}
+
+export interface City {
+  "country":string,
+  "cities": Array<string>
+}

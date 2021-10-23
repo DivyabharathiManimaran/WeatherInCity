@@ -11,6 +11,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatDividerModule} from '@angular/material/divider';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AgmCoreModule } from '@agm/core';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 
 
@@ -40,6 +41,7 @@ import { FocusDirective } from './weather-component/directives/auto-focus.direct
     MatDividerModule,
     AppRoutingModule,
     FontAwesomeModule,
+    MatAutocompleteModule,
     AgmCoreModule.forRoot({
       apiKey:'AIzaSyChmU90nvmA0JJkDtOrCDn5-IFZO5fX6gw'
     })
