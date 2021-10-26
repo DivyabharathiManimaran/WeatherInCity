@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { Inject, Injectable } from "@angular/core";
+import { Injectable } from "@angular/core";
 import * as moment from "moment";
 import { BehaviorSubject, Observable } from "rxjs";
 import { CityData, CityFromJson, DisplayWeather, WeatherResponse } from "../model/weather-response.model";

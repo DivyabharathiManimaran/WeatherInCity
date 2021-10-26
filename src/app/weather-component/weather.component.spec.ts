@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Pipe, PipeTransform, CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA, Directive, Input } from '@angular/core';
+import { Pipe, PipeTransform, Directive, Input } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { BehaviorSubject, interval, Observable, of, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 
 import { SESSION_STORAGE } from 'ngx-webstorage-service';
 import { WeatherComponent } from './weather.component';
 import { WeatherUtilityService } from './service/weather-utility.service';
-import { CityData, DisplayWeather, WeatherResponse } from './model/weather-response.model';
-
+import { CityData, CityFromJson, WeatherResponse } from './model/weather-response.model';
+ 
 @Directive({ selector: '[oneviewPermitted]' })
 class OneviewPermittedDirective {
   @Input() oneviewPermitted: any;
@@ -40,8 +40,7 @@ let weatherDetails = new BehaviorSubject<any>({
   humidity:60
 });
 
-const weathersServiceStub = {
-  
+const weathersServiceStub = {  
   getCities(): Observable<CityData>{
       return of({data:[{
         country: 'Germany',
@@ -49,7 +48,10 @@ const weathersServiceStub = {
       }]});
   },
   getWeatherByCity(): Observable<any> {
-    return of({});
+    return of({coord:{
+      lat:10,
+      lon:20
+    }});
   },
   getWeatherByCoord(): Observable<any> {
     return of({coord:{
@@ -61,13 +63,7 @@ const weathersServiceStub = {
   setDetails(param:any){
     weatherDetails.next(weatherDetails);
   }
-
-  // getCitiesFromJson: () => ({ subscribe: (f: (arg0: {}) => any) => f({}) }),
-  // getWeatherByCoord: (arg1:number, arg2:number) => ({ subscribe: (f: (arg0: {}) => any) => f({}) }),
-  // getWeatherByCity: (arg1:string) => ({ subscribe: (f: (arg0: {}) => any) => f({}) }),
-  // setDetails: (arg:WeatherResponse) => ({subscribe: (f: (arg0: {}) => any) => f({})})
 };
-
 
 const locationStub = {
   watchPosition(): Observable<any> {
@@ -80,31 +76,14 @@ const locationStub = {
     return {};
   }
 }
+
+/** Test cases for WeatherComponent */
 describe('WeatherComponent', () => {
   let fixture:ComponentFixture<WeatherComponent>;
   let component:WeatherComponent;
   let latitude:number = 10;
-  let longitude:number  = 10;
+  let longitude:number  = 20;
   let city:string = 'Berlin';
-
-  // beforeEach(() => {
-  //   TestBed.configureTestingModule({
-  //     imports: [ FormsModule, ReactiveFormsModule ],
-  //     declarations: [
-  //       WeatherComponent,
-  //       TranslatePipe, PhoneNumberPipe, SafeHtmlPipe,
-  //       OneviewPermittedDirective
-  //     ],
-  //     schemas: [ NO_ERRORS_SCHEMA ],
-  //     providers: [
-  //       { provide: 'SESSION_STORAGE', useValue: SESSION_STORAGE },
-  //       { provide: WeatherUtilityService, useValue: weathersServiceStub }
-  //     ]
-  //   });
-  //   // .overrideComponent(WeatherComponent, {}).compileComponents();
-  //   fixture = TestBed.createComponent(WeatherComponent);
-  //   component = fixture.debugElement.componentInstance;
-  // });
 
   beforeEach(()=> {
     TestBed.configureTestingModule({
@@ -119,9 +98,7 @@ describe('WeatherComponent', () => {
     spyOn(weathersServiceStub, "getCities").and.callThrough();
     fixture = TestBed.createComponent(WeatherComponent);
     component = fixture.debugElement.componentInstance;
-    spyOn(locationStub, "watchPosition").and.callThrough();
   })
-
 
   it('should run constructor()', async () => {
     expect(component).toBeTruthy();
@@ -134,33 +111,39 @@ describe('WeatherComponent', () => {
     expect(weathersServiceStub.getCities).toHaveBeenCalled();
   });
 
-
-  // describe("ngOnInit without city in storage", () => {
-  //   it('should run ngOnInit()', async () => {
-  //       component.storage.clear('cityName');
-  //       component.ngOnInit();
-  //       expect(component.filter).toBeDefined();
-  //       expect(component.filteredOptions).toBeDefined();
-  //       // spyOn(locationStub, "watchPosition").and.callThrough();
-  //       expect(locationStub.watchPosition).toHaveBeenCalled();
-  //       expect(component.waitingLocPerm).toBeFalse();
-  //       expect(component.currentLoc).toBeTrue()
-  //       expect(component.errorMsg).toEqual('');     
-  //       spyOn(weathersServiceStub, "getWeatherByCoord").and.callThrough();  
-  //       expect(weathersServiceStub.getWeatherByCoord).toHaveBeenCalled();
-  //     });
-  // });
-
   describe("ngOnInit with city in storage", () => {
     it('should run ngOnInit()', async () => {
-        component.storage.set('cityName', city);
-        spyOn(weathersServiceStub, "getWeatherByCity").and.callThrough();
-        component.ngOnInit();
-        expect(component.filter).toBeDefined();
-        expect(component.filteredOptions).toBeDefined();  
-        expect(weathersServiceStub.getWeatherByCity).toHaveBeenCalled();
-      });
+      component.storage.set('cityName', city);
+      spyOn(weathersServiceStub, "getWeatherByCity").and.callThrough();
+      spyOn(weathersServiceStub, "setDetails").and.callThrough();
+      component.ngOnInit();
+      expect(component.filter).toBeDefined();
+      expect(component.filteredOptions).toBeDefined();  
+      expect(weathersServiceStub.getWeatherByCity).toHaveBeenCalled();
+      expect(component.cityName).toEqual(city);
+      expect(component.weatherDetails).toBeDefined();
+      expect(component.currentLoc).toBeFalse();
+      expect(component.waitingLocPerm).toBeFalse();
+      expect(component.accessDenied).toBeFalse();
+      expect(component.errorMsg).toEqual('');
+      expect(component.lat).toEqual(10);
+      expect(component.long).toEqual(20);
+      expect(weathersServiceStub.setDetails).toHaveBeenCalled();
+      expect(component.displayWeather).toBeDefined();
+    });
   });
+
+  describe("ngOnInit on initial application load", () => {
+    it('should run ngOnInit()', async () => {
+      component.storage.clear();
+      spyOn(weathersServiceStub, "getWeatherByCoord").and.callThrough();
+      spyOn(weathersServiceStub, "setDetails").and.callThrough();
+      component.ngOnInit();
+      expect(component.displayWeather).toBeDefined();
+    });
+  });
+
+  
 
   describe("Fetch Cities List", () => {
     it('should run getCitiesFromAPI()', async () => {
@@ -170,99 +153,126 @@ describe('WeatherComponent', () => {
     });
   });
 
-  // describe("Fetch Current Location", () => {
-  //   it('should run getCurrentLocation()', async () => {      
-  //     spyOn(locationStub, "watchPosition").and.callThrough();
-  //     expect(locationStub.watchPosition).toHaveBeenCalled();
-  //     expect(component.waitingLocPerm).toBeFalse();
-  //     expect(component.errorMsg).toEqual('');
-  //     expect(component.lat && component.long).toBeDefined();
-      
-  //     spyOn(weathersServiceStub, "getWeatherByCoord").and.callThrough();  
-  //     expect(weathersServiceStub.getWeatherByCoord).toHaveBeenCalled();
-  //   });
-  // })
-
-  // describe("Fetch Details with coordinates", () => {
-  //   it('should run getUsingCoord()', async () => {
-  //     component.getUsingCoord(latitude,longitude);
-  //     spyOn(weathersServiceStub, "getWeatherByCoord").and.callThrough();
-  //     expect(weathersServiceStub.getWeatherByCoord).toHaveBeenCalled();
-  //     expect(component.weatherDetails).toBeDefined();
-  //     // expect(weathersServiceStub.setDetails).toHaveBeenCalled();
-
-  //     spyOn(weathersServiceStub, "getWeatherByCoord").and.throwError('error');
-  //     expect(component.errorMsg).toBeDefined();
-  //   });
-  // })
-
-  // it('should run searchClick()', async () => {
-  //   component.searchClick(city);
-  //   component.cityName = 'delhi';
-  //   if(component.cityName !== city) {
-  //     expect(component.cityTimerSubs).toBeUndefined();
-  //     expect(locationStub.clearWatch).toHaveBeenCalled();
-  //   }
-  // });
-
-  // it('should run #search()', async () => {
-  //   component.search(city);
-  //   spyOn(weathersServiceStub, "getWeatherByCity").and.callThrough();
-  //   expect(weathersServiceStub.getWeatherByCity).toHaveBeenCalled();
-  // });
-
-  // describe('Get details by city name', () => {
-  //   it('should run #fetchByCity()', async () => {
-  //     component.fetchByCity(city)
-  //     spyOn(weathersServiceStub, 'getWeatherByCity').and.callThrough();
-  //     expect(component.weatherDetails).toBeDefined();
-  //     expect(component.currentLoc).toBeFalse();
-  //     expect(component.waitingLocPerm).toBeFalse();
-  //     expect(component.accessDenied).toBeFalse();
-  //     expect(component.errorMsg).toEqual('');
-  //     expect(component.setCoord).toHaveBeenCalledWith(latitude,longitude);
-  //     expect(weathersServiceStub.setDetails).toHaveBeenCalled();
-
-  //     spyOn(weathersServiceStub, "getWeatherByCity").and.throwError('error');
-  //     expect(component.clearPrevSubs).toHaveBeenCalled();
-  //     expect(component.cityTimerSubs).toBeUndefined();
-  //     expect(navigator.geolocation.clearWatch).toHaveBeenCalled();
-  //     });
-  // })
+  it('should run searchClick()', async () => {
+    component.cityName = 'delhi';
+    component.cityCtrlVal = city;
+    spyOn(weathersServiceStub, "getWeatherByCity").and.callThrough();
+    spyOn(weathersServiceStub, "setDetails").and.callThrough();
+    component.setCoord(latitude,longitude);
+    component.searchClick(city);
+    expect(weathersServiceStub.getWeatherByCity).toHaveBeenCalled();
+    expect(component.cityName).toEqual(city);
+    expect(component.weatherDetails).toBeDefined();
+    expect(component.currentLoc).toBeFalse();
+    expect(component.waitingLocPerm).toBeFalse();
+    expect(component.accessDenied).toBeFalse();
+    expect(component.errorMsg).toEqual('');
+    expect(component.lat).toEqual(10);
+    expect(component.long).toEqual(20);
+    expect(weathersServiceStub.setDetails).toHaveBeenCalled();
+  });
 
   it('should run setMapCoords()', async () => {
+    spyOn(weathersServiceStub, "getWeatherByCoord").and.callThrough();
+    spyOn(weathersServiceStub, "setDetails").and.callThrough();
     component.setMapCoords({ coords: {lat : latitude, lng : longitude }});
-    // expect(component.clearPrevSubs).toHaveBeenCalled();
-    // expect(component.cityTimerSubs).toBeUndefined();
-    // expect(locationStub.clearWatch).toHaveBeenCalled();
-    
-    expect(component.lat && component.long).toBeDefined();
-    if(latitude && longitude) {
-      spyOn(weathersServiceStub, "getWeatherByCoord").and.callThrough();  
-      // expect(weathersServiceStub.getWeatherByCoord).toHaveBeenCalled();
-    }
-    else expect(component.errorMsg).toEqual('Unable to fetch results!');
+    expect(component.cityTimerSubs).toBeUndefined();
+    expect(component.cityName).toEqual('');
+    expect(component.lat).toEqual(10);
+    expect(component.long).toEqual(20);
+    expect(weathersServiceStub.getWeatherByCoord).toHaveBeenCalled();        
+    expect(component.weatherDetails).toBeDefined();
+    expect(component.errorMsg).toEqual('');
+    expect(weathersServiceStub.setDetails).toHaveBeenCalled();
   });
 
-  it('should run #setCoord()', async () => {
-    component.setCoord(latitude,longitude);
-    expect(component.lat && component.long).toBeDefined();
+  it('should run #ngOnDestroy()', async () => {
+    component.ngOnDestroy();
+    expect(component.cityTimerSubs).toBeUndefined();
+    expect(component.citySubs).toBeUndefined();
+    expect(component.weatherDetSubs).toBeUndefined();;
+    expect(component.coordSubs).toBeUndefined();;
   });
-
-  // it('should run #clearPrevSubs()', async () => {
-  //   component.clearPrevSubs();
-  //   expect(component.cityTimerSubs).toBeUndefined();
-  //   expect(navigator.geolocation.clearWatch).toHaveBeenCalled();
-  // });
-
-  // it('should run #ngOnDestroy()', async () => {
-  //   component.ngOnDestroy();
-  //   expect(component.clearPrevSubs).toHaveBeenCalled();
-  //   expect(component.cityTimerSubs).toBeUndefined();
-  //   expect(navigator.geolocation.clearWatch).toHaveBeenCalled();
-  //   expect(component.citySubs).toBeUndefined();
-  //   expect(component.weatherDetSubs).toBeUndefined();;
-  //   expect(component.coordSubs).toBeUndefined();;
-  // });
-
 });
+
+/** Test cases for WeatherUtiityService */
+describe('WeatherUtiityService', () => {
+  let httpClientSpy: { get: jasmine.Spy };
+  let weatherService: WeatherUtilityService;
+  const expectedWeatherResp : WeatherResponse = {
+    coord: { lon: 80.1578, lat: 13.0741 },
+    weather: [{ id: 701,main: "Mist",description: "mist",icon: "50n"}],
+    base: "stations",
+    main: { temp: 27.98, feels_like: 32.52, temp_min: 27.98, 
+      temp_max: 27.98,  pressure: 1011, humidity: 83 },
+    visibility: 3500,
+    wind: { speed: 1.03,deg: 0 },
+    clouds: { all: 40 },
+    dt: 1635269601,
+    sys: { type: 1, id: 9218, country: "IN", sunrise: 1635208288, sunset: 1635250499 },
+    timezone: 19800,
+    id: 1278840,
+    name: "Ambattur",
+    cod: 200
+};
+  
+  beforeEach(() => {
+    httpClientSpy = jasmine.createSpyObj('HttpClient', ['get']);
+    weatherService = new WeatherUtilityService(httpClientSpy as any);
+  });
+  
+  it('should return expected Cities (HttpClient called once)', (done: DoneFn) => {
+    const expectedCitiesResp: CityData = { 
+      data: [{ country: "Germany", 
+      cities: ["Berkheim","Berlin","Berlingerode","Bermatingen"]}]
+    };  
+    httpClientSpy.get.and.returnValue(of(expectedCitiesResp));  
+    weatherService.getCities().subscribe(
+      resp => {
+        expect(resp).toEqual(expectedCitiesResp, 'expected cities');
+        done();
+      },
+      done.fail
+    );
+    expect(httpClientSpy.get.calls.count()).toBe(1, 'one call');
+  });
+
+  it('should return expected Cities from Json (HttpClient called once)', (done: DoneFn) => {
+    const expectedJsonCityResp: CityFromJson = {"cities": ["Berkheim","Berlin"]};  
+    httpClientSpy.get.and.returnValue(of(expectedJsonCityResp));  
+    weatherService.getCitiesFromJson().subscribe(
+      resp => {
+        expect(resp).toEqual(expectedJsonCityResp, 'expected cities from Json');
+        done();
+      },
+      done.fail
+    );
+    expect(httpClientSpy.get.calls.count()).toBe(1, 'one call');
+  });
+
+  it('should return Weather details with city (HttpClient called once)', (done: DoneFn) => {  
+    httpClientSpy.get.and.returnValue(of(expectedWeatherResp));  
+    weatherService.getWeatherByCity('Ambatur').subscribe(
+      resp => {
+        expect(resp).toEqual(expectedWeatherResp, 'expected Weather details with city name');
+        done();
+      },
+      done.fail
+    );
+    expect(httpClientSpy.get.calls.count()).toBe(1, 'one call');
+  });
+
+  it('should return Weather details with coordinates (HttpClient called once)', (done: DoneFn) => {  
+    httpClientSpy.get.and.returnValue(of(expectedWeatherResp));  
+    weatherService.getWeatherByCoord(80.1578,13.0741).subscribe(
+      resp => {
+        expect(resp).toEqual(expectedWeatherResp, 'expected Weather details with coordinates');
+        done();
+      },
+      done.fail
+    );
+    expect(httpClientSpy.get.calls.count()).toBe(1, 'one call');
+  });
+});
+
+

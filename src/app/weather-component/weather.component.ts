@@ -1,11 +1,10 @@
-import { AfterViewInit, Component, Inject, OnDestroy, OnInit } from "@angular/core";
-import { FormGroup, FormBuilder, FormControl, Validators } from "@angular/forms";
+import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
+import { FormControl, Validators } from "@angular/forms";
 import { SESSION_STORAGE, StorageService } from 'ngx-webstorage-service';
 import { CityData, CityFromJson, DisplayWeather, WeatherResponse } from "./model/weather-response.model";
 import { WeatherUtilityService } from "./service/weather-utility.service";
 import { interval, Observable, Subscription } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
-import * as moment from "moment";
 
 const CITY = 'cityName';
 

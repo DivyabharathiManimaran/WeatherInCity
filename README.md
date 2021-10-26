@@ -1,4 +1,4 @@
-# WeatherInCIty
+# WeatherInCity
 
 The goal of this application is to view the Weather using a Open Source Weather API.
 
