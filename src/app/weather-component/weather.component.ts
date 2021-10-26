@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { FormGroup, FormBuilder, FormControl, Validators } from "@angular/forms";
 import { SESSION_STORAGE, StorageService } from 'ngx-webstorage-service';
-import { CityData, CityFromJson, DisplayWeather, WeatherResponse } from "./model/weather-reesponse.model";
+import { CityData, CityFromJson, DisplayWeather, WeatherResponse } from "./model/weather-response.model";
 import { WeatherUtilityService } from "./service/weather-utility.service";
 import { interval, Observable, Subscription } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -11,16 +11,16 @@ const CITY = 'cityName';
 
 @Component({
     selector:'weather-component',
-    templateUrl:'./weather-component.html',
-    styleUrls:['./weather-component.scss']
+    templateUrl:'./weather.component.html',
+    styleUrls:['./weather.component.scss']
 })
 export class WeatherComponent implements OnInit, OnDestroy {
 
     cityControl = new FormControl('',Validators.pattern("[a-zA-Z][a-zA-Z -]*"));
+    weatherDetails?:WeatherResponse;
+    cityCtrlVal:string ='';
     lat?:number;
     long?: number;
-    weatherDetails?:WeatherResponse;
-    cityNameVal:string ='';
     waitingLocPerm:boolean = false;
     accessDenied:boolean = false;
     currentLoc:boolean = false;
@@ -37,8 +37,8 @@ export class WeatherComponent implements OnInit, OnDestroy {
     filteredOptions?: Observable<string[]>;
 
     constructor(
-        @Inject(SESSION_STORAGE) private storage: StorageService,
-        private readonly weatherService: WeatherUtilityService) {
+        @Inject(SESSION_STORAGE)public storage: StorageService,
+        readonly weatherService: WeatherUtilityService) {
             this.getCitiesFromAPI();
         }
 
@@ -83,6 +83,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
         this.weatherService.getCitiesFromJson().subscribe( (res:CityFromJson) => {
             this.options=[];
             this.options.push(...res.cities);
+            this.options.sort();
         });
     }
 
@@ -126,7 +127,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
     }
 
     searchClick(city:string) {
-        if(this.cityName !== city) {
+        if(this.cityCtrlVal && this.cityControl.valid && (this.cityName?.toLowerCase() !== city.toLowerCase())) {
             this.clearPrevSubs();
             this.search(city);
         }
@@ -164,7 +165,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
     }
 
     /** Get coordinates from map */
-    getCoords(event: { coords: { lat: number; lng: number; }; }){           
+    setMapCoords(event: { coords: { lat: number; lng: number; }; }){           
         this.clearPrevSubs();   
         this.cityName = '';
         this.setCoord(event.coords.lat, event.coords.lng);

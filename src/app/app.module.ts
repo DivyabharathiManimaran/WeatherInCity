@@ -17,7 +17,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { WeatherComponent } from '../app/weather-component/weather-component';
+import { WeatherComponent } from './weather-component/weather.component';
 import { FocusDirective } from './weather-component/directives/auto-focus.directive';
 
 @NgModule({

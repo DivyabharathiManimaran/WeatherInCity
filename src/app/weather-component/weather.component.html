@@ -15,10 +15,11 @@
                             type="text"      
                             [formControl]="cityControl"
                             #cityName
-                            [(ngModel)]="cityNameVal"
-                            [matAutocomplete]=auto       
+                            [(ngModel)]="cityCtrlVal"
+                            [matAutocomplete]=auto
+                            (keydown.enter)="searchClick(cityName.value)"  
                             />
-                            <mat-autocomplete #auto="matAutocomplete">
+                            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="searchClick($event.option.value)">
                                 <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
                                     {{ option }}
                                 </mat-option>
@@ -26,13 +27,6 @@
                             <mat-hint>Enter atleast 3 characters</mat-hint>
                             <mat-error *ngIf="cityControl?.errors?.pattern">Please use characters only</mat-error>
                         </mat-form-field>
-                    </div>
-                    <div fxLayout="row">
-                        <button
-                        class="primary button-style"
-                        [disabled]="!cityNameVal || cityControl.invalid"
-                        (click)="searchClick(cityName.value)"
-                        mat-raised-button mat-primary>	<mat-icon inline=true> wb_sunny</mat-icon> See </button>
                     </div>
                 </div>
             </form>
@@ -54,7 +48,7 @@
                 </div>
                 <div [fxHide.lt-sm]="true" fxLayout="column" fxLayoutAlign ="start stretch" *ngIf="lat && long">
                     <agm-map fxLayoutAlign ="start stretch" 
-                     class="map-size" [latitude]="lat" [longitude]="long" (mapClick)="getCoords($event)">
+                     class="map-size" [latitude]="lat" [longitude]="long" (mapClick)="setMapCoords($event)">
                         <agm-marker [latitude]="lat" [longitude]="long"></agm-marker>
                     </agm-map>
                 </div>

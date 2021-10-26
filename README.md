@@ -1,5 +1,33 @@
 # WeatherInCIty
 
+The goal of this application is to view the Weather using a Open Source Weather API.
+
+## Basic implementation
+
+The application
+
+- Is an Angular application allowing the user to see the weather in a specified city.
+- Allows the user to select a city using an input.
+- Shows the weather details provided by the [OpenWeatherMap](https://openweathermap.org/) API.
+- Handles all possible API's erros by showing relevant error messages.
+- Updates the weather every ten seconds for the selected city.
+- Retains the last selected city upon refresh and shows its current weather details.
+- Uses Behavior subjects to detect any change in the state.
+- Is built to be responsive across multiple devices including mobiles.
+
+## Additional implementation
+
+The application
+
+- Provides a typeahead input for displaying auto suggestion of cities.
+- Shows the geographical position of the selected city or location in google maps.
+- Enables the user to view their current location's weather if the location access is provided.
+- Allows the user to select a location on the map to view the weather of that selected location.
+- Is built and deployed with the help of github pages.
+- Includes necessary test cases.
+
+## Project
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.1.1.
 
 ## Development server
@@ -17,11 +45,3 @@ Run `ng build` to build the project. The build artifacts will be stored in the `
 ## Running unit tests
 
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
