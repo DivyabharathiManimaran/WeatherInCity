@@ -105,6 +105,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
                 this.setCoord(resp.coords.latitude, resp.coords.longitude);
                 this.getUsingCoord(resp.coords.latitude,resp.coords.latitude);
             }, error => {
+                this.weatherDetails = undefined;
                 if(error.code == error.PERMISSION_DENIED) {
                     this.waitingLocPerm = false;
                     this.accessDenied=true;
@@ -171,6 +172,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
         this.clearPrevSubs();   
         this.cityName = '';
         this.cityCtrlVal = '';
+        this.currentLoc=false;
         this.setCoord(event.coords.lat, event.coords.lng);
         if(this.lat && this.long)this.getUsingCoord(this.lat,this.long);
         else this.errorMsg = 'Unable to fetch the coordinates. Please try searching using city name!';
