@@ -24,7 +24,15 @@ The application
 - Enables the user to view their current location's weather if the location access is provided.
 - Allows the user to select a location on the map to view the weather of that selected location.
 - Is built and deployed with the help of github pages.
-- Includes necessary test cases.
+- Includes necessary test cases with 70% coverage.
+
+## Application
+
+<img alt="Landing page" src="src/assets/images/app-image.JPG"/>
+
+## Test coverage report
+
+<img alt="Test coverage" src="src/assets/images/text-coverage.JPG"/>
 
 ## Project
 

@@ -16,8 +16,7 @@
                             [formControl]="cityControl"
                             #cityName
                             [(ngModel)]="cityCtrlVal"
-                            [matAutocomplete]=auto
-                            (keydown.enter)="searchClick(cityName.value)"  
+                            [matAutocomplete]=auto 
                             />
                             <mat-autocomplete #auto="matAutocomplete" (optionSelected)="searchClick($event.option.value)">
                                 <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
@@ -27,6 +26,13 @@
                             <mat-hint>Enter atleast 3 characters</mat-hint>
                             <mat-error *ngIf="cityControl?.errors?.pattern">Please use characters only</mat-error>
                         </mat-form-field>
+                    </div>
+                    <div fxLayout="row">
+                        <button
+                        class="primary button-style"
+                        [disabled]="!cityCtrlVal || cityControl.invalid"
+                        (click)="searchClick(cityName.value)"
+                        mat-raised-button mat-primary>	<mat-icon inline=true> wb_sunny</mat-icon> See </button>
                     </div>
                 </div>
             </form>
@@ -64,7 +70,7 @@
                 </h2>
             </div>
             <div [fxHide]="!errorMsg" fxLayout="column" fxFlex fxLayoutAlign="center center" fxLayoutGap="24px">
-                <img width="80" src="assets/error.gif" alt="loaderGif">
+                <img width="80" src="assets/images/error.gif" alt="loaderGif">
                 <h3>{{ errorMsg }}</h3>
             </div>
         </div>
