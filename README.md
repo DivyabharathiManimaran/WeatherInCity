@@ -23,7 +23,7 @@ The application
 - Shows the geographical position of the selected city or location in google maps.
 - Enables the user to view their current location's weather if the location access is provided.
 - Allows the user to select a location on the map to view the weather of that selected location.
-- Is built and deployed with the help of github pages.
+- Is built and deployed with the help of github pages and is available at - https://divyabharathimanimaran.github.io/WeatherInCity.
 - Includes necessary test cases with 70% coverage.
 
 ## Application
