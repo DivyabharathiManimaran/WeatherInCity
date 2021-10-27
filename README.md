@@ -8,7 +8,7 @@ The application
 
 - Is an Angular application allowing the user to see the weather in a specified city.
 - Allows the user to select a city using an input.
-- Shows the weather details provided by the [OpenWeatherMap](https://openweathermap.org/) API.
+- Shows the weather details provided by the [OpenWeatherMap](https://openweathermap.org/current) API.
 - Handles all possible API's erros by showing relevant error messages.
 - Updates the weather every ten seconds for the selected city.
 - Retains the last selected city upon refresh and shows its current weather details.
@@ -24,7 +24,7 @@ The application
 - Enables the user to view their current location's weather if the location access is provided.
 - Allows the user to select a location on the map to view the weather of that selected location.
 - Is built and deployed with the help of github pages and is available at - https://divyabharathimanimaran.github.io/WeatherInCity.
-- Includes necessary test cases with 70% coverage.
+- Includes necessary test cases with nearly 70% coverage.
 
 ## Application
 
