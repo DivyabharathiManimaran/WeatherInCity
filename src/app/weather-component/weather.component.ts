@@ -1,10 +1,11 @@
-import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { SESSION_STORAGE, StorageService } from 'ngx-webstorage-service';
 import { CityData, CityFromJson, DisplayWeather, WeatherResponse } from "./model/weather-response.model";
 import { WeatherUtilityService } from "./service/weather-utility.service";
 import { interval, Observable, Subscription } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { MatButton } from "@angular/material/button";
 
 const CITY = 'cityName';
 
@@ -15,6 +16,7 @@ const CITY = 'cityName';
 })
 export class WeatherComponent implements OnInit, OnDestroy {
 
+    @ViewChild('searchButton') searchButton?:MatButton;
     cityControl = new FormControl('',Validators.pattern("[a-zA-Z][a-zA-Z -]*"));
     weatherDetails?:WeatherResponse;
     cityCtrlVal:string ='';
@@ -126,6 +128,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
     }
 
     searchClick(city:string) {
+        this.searchButton?.focus();
         if(this.cityCtrlVal && this.cityControl.valid && (this.cityName?.toLowerCase() !== city.toLowerCase())) {
             this.clearPrevSubs();
             this.search(city);
@@ -156,7 +159,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
         }, error => {
             this.clearPrevSubs();  
             if(error.statusText == "Not Found") {
-                this.errorMsg = "City not found! Please verify the city name or search for another city.";
+                this.errorMsg = "Weather details for the selected city is not available! Try again with another city.";
             } else if(error.error.message) this.errorMsg = (error.error.message);
             else this.errorMsg = "Unable to fetch results!"
             
@@ -167,6 +170,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
     setMapCoords(event: { coords: { lat: number; lng: number; }; }){           
         this.clearPrevSubs();   
         this.cityName = '';
+        this.cityCtrlVal = '';
         this.setCoord(event.coords.lat, event.coords.lng);
         if(this.lat && this.long)this.getUsingCoord(this.lat,this.long);
         else this.errorMsg = 'Unable to fetch the coordinates. Please try searching using city name!';

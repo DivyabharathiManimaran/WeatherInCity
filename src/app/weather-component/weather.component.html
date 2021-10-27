@@ -29,6 +29,7 @@
                     </div>
                     <div fxLayout="row">
                         <button
+                        #searchButton
                         class="primary button-style"
                         [disabled]="!cityCtrlVal || cityControl.invalid"
                         (click)="searchClick(cityName.value)"
@@ -39,15 +40,22 @@
         </div>
         <div fxFlex class="right-colum">
             <div *ngIf="weatherDetails && !errorMsg" fxLayout="column" fxFlex fxLayoutAlign ="center center">
-                <h2 *ngIf="currentLoc;else city">The Weather in your location ({{ weatherDetails.name }})</h2>
+                <div class="title" *ngIf="currentLoc;else city">Current Weather in your location ({{ weatherDetails.name }})</div>
                 <ng-template #city>
-                    <h2>The weather in {{ (displayWeather?.city | titlecase) || 'selected location'}}</h2>
+                    <div class="title">Current weather in {{ (displayWeather?.city | titlecase) || 'selected location'}}</div>
                 </ng-template>
-                <div fxLayout="column" fxLayoutAlign="center center">
-                    <div *ngIf="displayWeather?.isDay"><i class="fas fa-4x fa-sun sun"></i></div>
-                    <div *ngIf="!displayWeather?.isDay"><i class="fas fa-4x fa-moon moon"></i></div>
-                    <div class="cloud-position"><i class="fas fa-4x fa-cloud cloud"></i></div>
-                    <h3 class="main-content">{{ displayWeather?.currentTemp}}°C</h3>
+                <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="10px">
+                    <div fxLayout="row" fxLayoutGap="15px">
+                        <div>
+                            <div *ngIf="displayWeather?.isDay"><i class="fas fa-4x fa-sun sun"></i></div>
+                            <div *ngIf="!displayWeather?.isDay"><i class="fas fa-4x fa-moon moon"></i></div>
+                            <div class="cloud-position"><i class="fas fa-4x fa-cloud cloud"></i></div>
+                        </div>
+                        <div fxLayout="row" fxLayoutAlign="center center">
+                            <div class="main-content">{{ displayWeather?.currentTemp}}</div>
+                            <div class="main-content-suffix" fxLayout="column"><div>°C</div></div>
+                        </div>
+                    </div>
                     <div class="sub-content">{{ displayWeather?.minTemp}}°C / {{ displayWeather?.maxTemp }}°C</div>
                     <div><span class="label">Feels like: </span><span class="sub-content">{{ displayWeather?.feelsLike }}°C</span></div>
                     <div><span class="label">Humidity: </span><span class="sub-content">{{ displayWeather?.humidity }}%</span></div>
@@ -66,7 +74,7 @@
             </div>        
             <div *ngIf="accessDenied && !waitingLocPerm && !errorMsg" fxFlex fxLayoutAlign ="center center">
                 <h2>
-                    Search using city name to know the weather there.
+                    Search using city name
                 </h2>
             </div>
             <div [fxHide]="!errorMsg" fxLayout="column" fxFlex fxLayoutAlign="center center" fxLayoutGap="24px">
